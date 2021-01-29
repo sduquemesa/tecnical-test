@@ -1,10 +1,9 @@
 import { Server, Socket } from 'socket.io';
 
-export interface IUserInfo {
+export interface IUserParams {
   io: Server;
   socket: Socket;
   username: string;
-  room_id: number;
-  password: string;
+  room_name: string;
   action: string;
 }

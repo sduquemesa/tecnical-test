@@ -1,1 +1,1 @@
-export { IUserInfo } from './IUser';
+export { IUserParams } from './IUser';
