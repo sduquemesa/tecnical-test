@@ -44,7 +44,7 @@ export default class Room {
       console.log('Room.onDisconnect()');
       for (const room of socket.rooms) {
         if (room !== socket.id) {
-          socket.to(room).emit('user has left', socket.id);
+          socket.to(room).emit(`user has left ${socket.id}`, socket.id);
           console.log(`user ${socket.id} has left`);
         }
       }
