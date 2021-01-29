@@ -1,0 +1,1 @@
+export { IUserInfo } from './IUser';
