@@ -45,3 +45,5 @@ typings/
 .DS_*
 **/*.backup.*
 **/*.back.*
+
+**/build/*
