@@ -9,7 +9,6 @@ export default class Room {
   private socket: Socket;
   public username: string;
   public room_name: string;
-  private action: string;
   constructor({ io, socket, username, room_name, action }: IUserParams) {
     Object.assign(this, { io, socket, username, room_name, action });
   } /* End constructor(). */
@@ -19,12 +18,20 @@ export default class Room {
    *
    * @return boolean if connection to room was established.
    */
-  public async init(): Promise<boolean> {
+  public async join(): Promise<boolean> {
     console.log('Room.init()');
-    // destructure params
 
+    // Join to room
     try {
       await this.socket.join('${room_id}');
+      // Let others in the room someone has joined
+      for (const room of this.socket.rooms) {
+        if (room !== this.socket.id) {
+          this.socket
+            .to(room)
+            .emit(`user has joined ${this.socket.id}`, this.socket.id);
+        }
+      }
       console.log(`Client joined room: ${this.room_name}`);
       return true;
     } catch (error) {

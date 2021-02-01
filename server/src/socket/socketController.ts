@@ -15,7 +15,9 @@ export default function socket(httpServer: http.Server): Server {
   });
 
   console.log('Socket.io initialised!');
-  io.on('connection', async (socket: Socket) => {
+  io
+    // TODO: .use(verify) to check user has logged in
+    .on('connection', async (socket: Socket) => {
     // Get user params from query
     const user_params: IUserParams = {
       io: io,
@@ -35,7 +37,7 @@ export default function socket(httpServer: http.Server): Server {
     );
 
     const room = new Room(user_params);
-    const in_room: boolean = await room.init();
+    const in_room: boolean = await room.join();
 
     if (in_room) {
       console.log('In room');
