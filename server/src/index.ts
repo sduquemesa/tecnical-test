@@ -28,11 +28,6 @@ app.use('/', (req: Request, res: Response, next: NextFunction) => {
   res.status(200).send({ data: 'Hello from app!' });
 });
 
-// Start server
-app.listen(Number(PORT), () =>
-  console.log(`Server is listening on port ${PORT}!`)
-);
-
 // Plug servers on ports
 app.listen(Number(PORT), () => {
   console.log(`API listening on port ${PORT}!`);
@@ -40,4 +35,8 @@ app.listen(Number(PORT), () => {
 
 httpServer.listen(Number(PORT) + 1, () => {
   console.log(`SOCKET listening on port ${PORT}!`);
+});
+
+app.listen(Number(PORT), () => {
+  console.log(`http://localhost:${PORT}/public`);
 });

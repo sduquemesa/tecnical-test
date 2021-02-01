@@ -2,13 +2,16 @@ import { Server, Socket } from 'socket.io';
 import { IUserParams } from './../types';
 
 export default class Room {
-  /**
+   /**
    * Constructor.
    */
-  private static params: IUserParams;
-  constructor(params: IUserParams) {
-    console.log(`Rooms.constructor socket_id=${params.socket.id}`);
-    Room.params = params;
+  private io: Server;
+  private socket: Socket;
+  public username: string;
+  public room_name: string;
+  private action: string;
+  constructor({ io, socket, username, room_name, action }: IUserParams) {
+    Object.assign(this, { io, socket, username, room_name, action });
   } /* End constructor(). */
 
   /**
@@ -19,11 +22,10 @@ export default class Room {
   public async init(): Promise<boolean> {
     console.log('Room.init()');
     // destructure params
-    let { io, socket, username, room_name, action } = Room.params;
 
     try {
-      await socket.join('${room_id}');
-      console.log(`Client joined room: ${room_name}`);
+      await this.socket.join('${room_id}');
+      console.log(`Client joined room: ${this.room_name}`);
       return true;
     } catch (error) {
       console.log('Room.init() ERROR when trying to join room');
@@ -38,16 +40,16 @@ export default class Room {
    * @return none.
    */
   public onDisconnecting() {
-    let { socket } = Room.params;
-
-    socket.on('disconnecting', (reason: any) => {
+    this.socket.on('disconnecting', (reason: any) => {
       console.log('Room.onDisconnect()');
-      for (const room of socket.rooms) {
-        if (room !== socket.id) {
-          socket.to(room).emit(`user has left ${socket.id}`, socket.id);
-          console.log(`user ${socket.id} has left`);
+      for (const room of this.socket.rooms) {
+        if (room !== this.socket.id) {
+          this.socket
+            .to(room)
+            .emit(`user has left ${this.socket.id}`, this.socket.id);
+          console.log(`user ${this.socket.id} has left`);
         }
       }
     });
-  }
-}
+  } /* end onDisconnecting() */
+} /* end of Class */
