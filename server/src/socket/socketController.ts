@@ -33,6 +33,7 @@ export default function socket(httpServer: http.Server): Server {
       );
 
       const room = new Room(user_params);
+      room.init();
     });
 
   return io;

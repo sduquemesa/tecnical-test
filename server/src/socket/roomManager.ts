@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import { IUserParams } from '../types';
+import consola from 'consola';
 
 export default class Room {
   /**
@@ -11,21 +12,31 @@ export default class Room {
   public current_room: string;
   public on_room: boolean;
   constructor({ io, socket, username }: IUserParams) {
-    console.log('Room.constructor');
     Object.assign(this, { io, socket, username });
     this.current_room = '';
     this.on_room = false;
-
-    // Attach the join_room event to the socket
-    this.onJoin();
-    // Attach the change_room event to the socket
-    this.onRoomChange();
-    // Attach the disconnecting event to the socket
-    this.onDisconnecting();
+    consola.log('Room.init()');
   } /* End constructor(). */
 
   /**
-   * onJoin: attach on join room event
+   * init: register listeners to events
+   *
+   * @return none.
+   */
+  public init() {
+    consola.log('Room.init()');
+    // register the join_room event to the socket
+    this.onJoin();
+    // register the change_room event to the socket
+    this.onRoomChange();
+    // register the disconnecting event to the socket
+    this.onDisconnecting();
+    // register on message event to the socket
+    this.onMessage();
+  }
+
+  /**
+   * onJoin: register on join room event
    *
    * @return none.
    */
@@ -44,30 +55,28 @@ export default class Room {
               .emit(`user has joined ${this.socket.id}`, this.socket.id);
           }
         }
-        console.log(`Client joined room: ${this.current_room}`);
+        consola.log(`Client joined room: ${this.current_room}`);
       } catch (error) {
-        console.log('Room.join() ERROR when trying to join room');
+        consola.log('Room.join() ERROR when trying to join room');
       }
     });
   } /* end onJoin() */
 
   /**
-   * onRoomChange: Attach on room change event.
+   * onRoomChange: register on room change event.
    *
    * @return none.
    */
   private onRoomChange() {
     this.socket.on('room_change', (new_room: string) => {
-      console.log(
+      consola.log(
         `Client changed from room ${this.current_room} to ${new_room}`
       );
 
       // Let others in the room know someone just left
       for (const room of this.socket.rooms) {
         if (room !== this.socket.id) {
-          this.socket
-            .to(room)
-            .emit(`user has left ${this.socket.id}`, this.socket.id);
+          this.socket.to(room).emit(`user_left`, this.socket.id);
         }
       }
       // Leave current room
@@ -79,30 +88,43 @@ export default class Room {
       // Let others in the room know someone has joined
       for (const room of this.socket.rooms) {
         if (room !== this.socket.id) {
-          this.socket
-            .to(room)
-            .emit(`user has joined ${this.socket.id}`, this.socket.id);
+          this.socket.to(room).emit(`user_joined`, this.socket.id);
         }
       }
     });
   } /* end onRoomChange() */
 
   /**
-   * onDisconnect: Attach on disconnecting event to emit message to other users in the room.
+   * onDisconnect: register on disconnecting event to emit message to other users in the room.
    *
    * @return none.
    */
   private onDisconnecting() {
     this.socket.on('disconnecting', (reason: any) => {
-      console.log('Room.onDisconnect()');
+      consola.log('Room.onDisconnect()');
       for (const room of this.socket.rooms) {
         if (room !== this.socket.id) {
           this.socket
             .to(room)
             .emit(`user has left ${this.socket.id}`, this.socket.id);
-          console.log(`user ${this.socket.id} has left`);
+          consola.log(`user ${this.socket.id} has left`);
         }
       }
     });
   } /* end onDisconnecting() */
+
+  /**
+   * onMessage: register on message event
+   *
+   * @return none.
+   */
+  private onMessage() {
+    consola.log('Room.onMessage()');
+    this.socket.on('message', (message: string) => {
+      consola.log(`Room.onMessage(${message})`);
+      this.socket
+        .to(this.current_room)
+        .emit(`Message from ${this.socket.id}`, message);
+    });
+  } /* End of onMessage() */
 } /* end of Class */

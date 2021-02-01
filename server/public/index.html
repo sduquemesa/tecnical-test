@@ -35,8 +35,8 @@
         });
 
         socket.onAny((event, ...args) => {
-            console.log(`got ${event}`);
-            $events.appendChild(newItem(`${event}`));
+            console.log(`got ${event}`, args);
+            $events.appendChild(newItem(`${event} ${args}`));
         });
 
         changeRoom1 = () => {
@@ -48,10 +48,24 @@
         changeRoom3 = () => {
             socket.emit("room_change", "room_3");
         }
+
+        handleOnSubmit = () => {
+            const text = document.getElementById('txtbox').value;
+            if (socket.connected) {
+                console.log(`message ${text}`);
+                socket.emit("message", `${text}`);
+            }
+            return false;
+        }
     </script>
     <button onclick="changeRoom1()">room 1</button>
     <button onclick="changeRoom2()">room 2</button>
     <button onclick="changeRoom3()">room 3</button>
+
+    <form action="#">
+        Enter message: <input type="text" name="txtbox" id="txtbox">
+        <input type="button" value="Send" onclick="handleOnSubmit()">
+    </form>
 </body>
 
 </html>
