@@ -11,9 +11,36 @@
 <body>
     <h1>Hola!</h1>
     <script>
-        var socket = io.connect('http://localhost:3001');
+        var socket = io.connect('http://localhost:3001', {
+            query: {
+                username: 'test_user',
+                room_name: 'test_room',
+                action: 'join'
+            }
+        });
         socket.on("connect", () => {
             console.log(socket.id);
+        });
+    </script>
+    <ul id="events"></ul>
+
+    <script>
+        const $events = document.getElementById('events');
+
+        const newItem = (content) => {
+            const item = document.createElement('li');
+            item.innerText = content;
+            return item;
+        };
+
+
+        socket.on('connect', () => {
+            $events.appendChild(newItem('connect'));
+        });
+
+        socket.onAny((event, ...args) => {
+            console.log(`got ${event}`);
+            $events.appendChild(newItem(`${event}`));
         });
     </script>
 </body>
