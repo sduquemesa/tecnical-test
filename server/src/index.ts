@@ -1,10 +1,10 @@
 import express, { Application, Request, Response, NextFunction } from 'express';
 import * as http from 'http';
-import path from 'path';
 import cors from 'cors';
 import consola from 'consola';
+import './database/db';
 
-import { PORT, HOSTNAME } from './env';
+import { PORT } from './env';
 import { socket } from './socket';
 
 // Create express app

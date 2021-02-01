@@ -1,7 +1,16 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const HOSTNAME: string =
-  process.env.NODE_ENV === 'production' ? '' : 'localhost';
+export let HOSTNAME: string = '';
+export let PORT: number = 0;
+export let DB_URL: string = '';
 
-export const PORT: string = process.env.NODE_ENV === 'production' ? '' : '3000';
+if (process.env.NODE_ENV === 'production') {
+  HOSTNAME = '';
+  PORT = 0;
+  DB_URL = '';
+} else {
+  HOSTNAME = 'localhost';
+  PORT = 3000;
+  DB_URL = 'mongodb://127.0.0.1:27017/chatdb';
+}
