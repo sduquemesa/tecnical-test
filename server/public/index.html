@@ -10,21 +10,15 @@
 
 <body>
     <h1>Hola!</h1>
+    <ul id="events"></ul>
     <script>
         var socket = io.connect('http://localhost:3001', {
             query: {
-                username: 'test_user',
-                room_name: 'test_room',
-                action: 'join'
+                username: 'test_user'
             }
         });
-        socket.on("connect", () => {
-            console.log(socket.id);
-        });
-    </script>
-    <ul id="events"></ul>
 
-    <script>
+
         const $events = document.getElementById('events');
 
         const newItem = (content) => {
@@ -35,14 +29,29 @@
 
 
         socket.on('connect', () => {
-            $events.appendChild(newItem('connect'));
+            $events.appendChild(newItem(`This tab is connected id=${socket.id}`));
+            console.log(`This tab id is ${socket.id}`);
+            socket.emit("join_room", "room_1");
         });
 
         socket.onAny((event, ...args) => {
             console.log(`got ${event}`);
             $events.appendChild(newItem(`${event}`));
         });
+
+        changeRoom1 = () => {
+            socket.emit("room_change", "room_1");
+        }
+        changeRoom2 = () => {
+            socket.emit("room_change", "room_2");
+        }
+        changeRoom3 = () => {
+            socket.emit("room_change", "room_3");
+        }
     </script>
+    <button onclick="changeRoom1()">room 1</button>
+    <button onclick="changeRoom2()">room 2</button>
+    <button onclick="changeRoom3()">room 3</button>
 </body>
 
 </html>

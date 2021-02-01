@@ -11,6 +11,7 @@ export default class Room {
   public current_room: string;
   public on_room: boolean;
   constructor({ io, socket, username }: IUserParams) {
+    console.log('Room.constructor');
     Object.assign(this, { io, socket, username });
     this.current_room = '';
     this.on_room = false;
@@ -24,12 +25,12 @@ export default class Room {
   } /* End constructor(). */
 
   /**
-   * onJoin: Join room
+   * onJoin: attach on join room event
    *
    * @return none.
    */
   private onJoin() {
-    this.socket.on('join', async (room: string) => {
+    this.socket.on('join_room', async (room: string) => {
       // Join to room
       try {
         await this.socket.join(`${room}`);
@@ -57,17 +58,24 @@ export default class Room {
    */
   private onRoomChange() {
     this.socket.on('room_change', (new_room: string) => {
-      console.log(`Room.onRoomChange(${new_room})`);
       console.log(
-        `Client change from room ${this.current_room} to ${new_room}`
+        `Client changed from room ${this.current_room} to ${new_room}`
       );
+
+      // Let others in the room know someone just left
+      for (const room of this.socket.rooms) {
+        if (room !== this.socket.id) {
+          this.socket
+            .to(room)
+            .emit(`user has left ${this.socket.id}`, this.socket.id);
+        }
+      }
       // Leave current room
       this.socket.leave(`${this.current_room}`);
 
       // Join the new room
       this.current_room = new_room;
       this.socket.join(`${new_room}`);
-
       // Let others in the room know someone has joined
       for (const room of this.socket.rooms) {
         if (room !== this.socket.id) {
