@@ -3,7 +3,7 @@ import * as http from 'http';
 
 import { HOSTNAME } from './../env';
 import { IUserParams } from './../types';
-import Room from './roomsController';
+import Room from './roomManager';
 
 export default function socket(httpServer: http.Server): Server {
   const io: Server = new Server(httpServer, {
@@ -18,37 +18,22 @@ export default function socket(httpServer: http.Server): Server {
   io
     // TODO: .use(verify) to check user has logged in
     .on('connection', async (socket: Socket) => {
-    // Get user params from query
-    const user_params: IUserParams = {
-      io: io,
-      socket: socket,
-      username: '',
-      room_name: '',
-      action: '',
-      ...socket.handshake.query,
-    };
+      // Get user params from query
+      const user_params: IUserParams = {
+        io: io,
+        socket: socket,
+        username: '',
+        ...socket.handshake.query,
+      };
 
-    console.log(
-      'Client Connected:',
-      user_params.username,
-      user_params.room_name,
-      user_params.action,
-      user_params.socket.id
-    );
+      console.log(
+        'Client Connected:',
+        user_params.username,
+        user_params.socket.id
+      );
 
-    const room = new Room(user_params);
-    const in_room: boolean = await room.join();
-
-    if (in_room) {
-      console.log('In room');
-    }
-
-    // Attach the change_room event to the socket
-    // room.onRoomChange();
-
-    // Attach the disconnecting event to the socket
-    room.onDisconnecting();
-  });
+      const room = new Room(user_params);
+    });
 
   return io;
 }
