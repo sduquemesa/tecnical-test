@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import * as http from 'http';
 import path from 'path';
 import cors from 'cors';
+import consola from 'consola';
 
 import { PORT, HOSTNAME } from './env';
 import { socket } from './socket';
@@ -30,13 +31,13 @@ app.use('/', (req: Request, res: Response, next: NextFunction) => {
 
 // Plug servers on ports
 app.listen(Number(PORT), () => {
-  console.log(`API listening on port ${PORT}!`);
+  consola.success(`API listening on port ${PORT}!`);
 });
 
 httpServer.listen(Number(PORT) + 1, () => {
-  console.log(`SOCKET listening on port ${PORT}!`);
+  consola.success(`SOCKET listening on port ${PORT}!`);
 });
 
 app.listen(Number(PORT), () => {
-  console.log(`http://localhost:${PORT}/public`);
+  consola.success(`http://localhost:${PORT}/public`);
 });

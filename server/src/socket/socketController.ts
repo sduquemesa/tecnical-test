@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io';
 import * as http from 'http';
+import consola from 'consola';
 
 import { HOSTNAME } from './../env';
 import { IUserParams } from './../types';
@@ -26,7 +27,7 @@ export default function socket(httpServer: http.Server): Server {
         ...socket.handshake.query,
       };
 
-      console.log(
+      consola.info(
         'Client Connected:',
         user_params.username,
         user_params.socket.id

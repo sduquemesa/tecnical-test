@@ -15,7 +15,7 @@ export default class Room {
     Object.assign(this, { io, socket, username });
     this.current_room = '';
     this.on_room = false;
-    consola.log('Room.init()');
+    consola.info('Room.init()');
   } /* End constructor(). */
 
   /**
@@ -24,7 +24,7 @@ export default class Room {
    * @return none.
    */
   public init() {
-    consola.log('Room.init()');
+    consola.info('Room.init()');
     // register the join_room event to the socket
     this.onJoin();
     // register the change_room event to the socket
@@ -55,9 +55,9 @@ export default class Room {
               .emit(`user has joined ${this.socket.id}`, this.socket.id);
           }
         }
-        consola.log(`Client joined room: ${this.current_room}`);
+        consola.info(`Client joined room: ${this.current_room}`);
       } catch (error) {
-        consola.log('Room.join() ERROR when trying to join room');
+        consola.info('Room.join() ERROR when trying to join room');
       }
     });
   } /* end onJoin() */
@@ -69,7 +69,7 @@ export default class Room {
    */
   private onRoomChange() {
     this.socket.on('room_change', (new_room: string) => {
-      consola.log(
+      consola.info(
         `Client changed from room ${this.current_room} to ${new_room}`
       );
 
@@ -101,13 +101,13 @@ export default class Room {
    */
   private onDisconnecting() {
     this.socket.on('disconnecting', (reason: any) => {
-      consola.log('Room.onDisconnect()');
+      consola.info('Room.onDisconnect()');
       for (const room of this.socket.rooms) {
         if (room !== this.socket.id) {
           this.socket
             .to(room)
             .emit(`user has left ${this.socket.id}`, this.socket.id);
-          consola.log(`user ${this.socket.id} has left`);
+          consola.info(`user ${this.socket.id} has left`);
         }
       }
     });
@@ -119,9 +119,9 @@ export default class Room {
    * @return none.
    */
   private onMessage() {
-    consola.log('Room.onMessage()');
+    consola.info('Room.onMessage()');
     this.socket.on('message', (message: string) => {
-      consola.log(`Room.onMessage(${message})`);
+      consola.info(`Room.onMessage(${message})`);
       this.socket
         .to(this.current_room)
         .emit(`Message from ${this.socket.id}`, message);
