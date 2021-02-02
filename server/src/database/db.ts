@@ -2,6 +2,10 @@ import mongoose from 'mongoose';
 import { DB_URL } from './../env';
 import consola from 'consola';
 
+if (process.env.NODE_ENV !== 'production') {
+  mongoose.set('debug', true);
+}
+
 mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,

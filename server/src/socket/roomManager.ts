@@ -1,6 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import { IUserParams } from '../types';
 import consola from 'consola';
+import { Message } from './../models';
+
+import mongoose from 'mongoose';
 
 export default class Room {
   /**
@@ -15,6 +18,7 @@ export default class Room {
     Object.assign(this, { io, socket, username });
     this.current_room = '';
     this.on_room = false;
+
     consola.info('Room.init()');
   } /* End constructor(). */
 
@@ -42,19 +46,9 @@ export default class Room {
    */
   private onJoin() {
     this.socket.on('join_room', async (room: string) => {
-      // Join to room
+      // Join room
       try {
-        await this.socket.join(`${room}`);
-        this.current_room = room;
-        this.on_room = true;
-        // Let others in the room know someone has joined
-        for (const room of this.socket.rooms) {
-          if (room !== this.socket.id) {
-            this.socket
-              .to(room)
-              .emit(`user has joined ${this.socket.id}`, this.socket.id);
-          }
-        }
+        await this.joinRoom(room);
         consola.info(`Client joined room: ${this.current_room}`);
       } catch (error) {
         consola.info('Room.join() ERROR when trying to join room');
@@ -68,29 +62,17 @@ export default class Room {
    * @return none.
    */
   private onRoomChange() {
-    this.socket.on('room_change', (new_room: string) => {
+    this.socket.on('room_change', async (new_room: string) => {
       consola.info(
         `Client changed from room ${this.current_room} to ${new_room}`
       );
 
-      // Let others in the room know someone just left
-      for (const room of this.socket.rooms) {
-        if (room !== this.socket.id) {
-          this.socket.to(room).emit(`user_left`, this.socket.id);
-        }
-      }
       // Leave current room
-      this.socket.leave(`${this.current_room}`);
+      await this.leaveRoom();
 
       // Join the new room
       this.current_room = new_room;
-      this.socket.join(`${new_room}`);
-      // Let others in the room know someone has joined
-      for (const room of this.socket.rooms) {
-        if (room !== this.socket.id) {
-          this.socket.to(room).emit(`user_joined`, this.socket.id);
-        }
-      }
+      await this.joinRoom(this.current_room);
     });
   } /* end onRoomChange() */
 
@@ -119,12 +101,54 @@ export default class Room {
    * @return none.
    */
   private onMessage() {
-    consola.info('Room.onMessage()');
     this.socket.on('message', (message: string) => {
       consola.info(`Room.onMessage(${message})`);
       this.socket
         .to(this.current_room)
         .emit(`Message from ${this.socket.id}`, message);
+      this.storeMessage(message);
     });
   } /* End of onMessage() */
+
+  /**
+   * storeMessage: store message on DB
+   *
+   * @return none.
+   */
+  private storeMessage(message: string) {
+    consola.info(`Room.storeOnDB(${message})`);
+    const messageDB = new Message({
+      username: this.username,
+      message: message,
+      room: this.current_room,
+    });
+    messageDB.save();
+  } /* End of storeMessage() */
+
+  private async joinRoom(new_room: string) {
+    await this.socket.join(`${new_room}`);
+    this.current_room = new_room;
+    this.on_room = true;
+    // Let others in the room know someone has joined
+    for (const room of this.socket.rooms) {
+      if (room !== this.socket.id) {
+        this.socket
+          .to(room)
+          .emit(`user has joined ${this.socket.id}`, this.socket.id);
+      }
+    }
+  }
+
+  private async leaveRoom() {
+    // Let others in the curret room know someone just left
+    for (const room of this.socket.rooms) {
+      if (room !== this.socket.id) {
+        this.socket.to(room).emit(`user_left`, this.socket.id);
+      }
+    }
+    // Leave current room
+    await this.socket.leave(`${this.current_room}`);
+    this.on_room = false;
+    this.current_room = '';
+  }
 } /* end of Class */
