@@ -47,12 +47,8 @@ export default class Room {
   private onJoin() {
     this.socket.on('join_room', async (room: string) => {
       // Join room
-      try {
-        await this.joinRoom(room);
-        consola.info(`Client joined room: ${this.current_room}`);
-      } catch (error) {
-        consola.info('Room.join() ERROR when trying to join room');
-      }
+      await this.joinRoom(room);
+      consola.info(`Client joined room: ${this.current_room}`);
     });
   } /* end onJoin() */
 
@@ -137,6 +133,8 @@ export default class Room {
           .emit(`user has joined ${this.socket.id}`, this.socket.id);
       }
     }
+    // send last messages
+    this.socket.emit('message_history', this.getLastMessages());
   }
 
   private async leaveRoom() {
@@ -150,5 +148,13 @@ export default class Room {
     await this.socket.leave(`${this.current_room}`);
     this.on_room = false;
     this.current_room = '';
+  }
+
+  private async getLastMessages() {
+    const messages = await Message.find({ room: this.current_room })
+      .sort({ created_at: -1 })
+      .limit(20);
+    consola.log(messages);
+    return messages;
   }
 } /* end of Class */
